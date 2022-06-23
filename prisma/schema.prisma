@@ -1,0 +1,198 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                  String                @id @default(uuid())
+  name                String?
+  email               String                @unique
+  emailVerified       Boolean               @default(false)
+  document            String                @unique
+  password            String
+  phone               String                @unique
+  phoneVerified       Boolean               @default(false)
+  createdAt           DateTime              @default(now())
+  active              Boolean               @default(true)
+  OrganizationMembers OrganizationMember[]
+  Address             Address?              @relation(fields: [addressId], references: [id])
+  addressId           String?
+  Post                Post[]
+  PostComments        PostComments[]
+}
+
+model Organization {
+  id          String  @id @default(uuid())
+  name        String
+  email       String  @unique
+  description String? @db.Text
+  document    String  @unique
+  logo        String? @db.Text
+  cover       String? @db.Text
+
+  // Atletica
+  course       String?
+  university   University? @relation(fields: [universityId], references: [id])
+  universityId Int?
+
+  active              Boolean               @default(true)
+  deleted             Boolean               @default(false)
+  OrganizationMembers OrganizationMember[]
+  Address             Address?              @relation(fields: [addressId], references: [id])
+  addressId           String?
+}
+
+model University {
+  id           Int         @id
+  name         String
+  initials     String
+  uf           String
+  Organization Organization[]
+}
+
+model OrganizationMember {
+  User           User         @relation(fields: [userId], references: [id])
+  userId         String
+  Organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+  permission     Int
+
+  @@id([userId, organizationId])
+}
+
+model Event {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  exclusive   Boolean       @default(false)
+  active      Boolean       @default(true)
+  EventPhotos EventPhotos[]
+}
+
+model EventPhotos {
+  id      String @id @default(uuid())
+  Event   Event  @relation(fields: [eventId], references: [id])
+  eventId String
+  photo   String
+}
+
+model TicketGroup {
+  id          String        @id @default(uuid())
+  name        String
+  active      Boolean       @default(true)
+  TicketBlock TicketBlock[]
+}
+
+model TicketBlock {
+  id            String      @id @default(uuid())
+  name          String
+  price         Float
+  quantity      Int
+  startDate     DateTime
+  endDate       DateTime
+  active        Boolean     @default(true)
+  TicketGroup   TicketGroup @relation(fields: [ticketGroupId], references: [id])
+  ticketGroupId String
+  Ticket        Ticket[]
+}
+
+model Ticket {
+  id            String      @id @default(uuid())
+  token         String      @unique
+  TicketBlock   TicketBlock @relation(fields: [ticketBlockId], references: [id])
+  ticketBlockId String
+  Payment       Payment[]
+}
+
+model Post {
+  id           String         @id @default(uuid())
+  title        String
+  body         String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime?
+  User         User           @relation(fields: [userId], references: [id])
+  userId       String
+  PostPhotos   PostPhotos[]
+  PostVideos   PostVideos[]
+  PostComments PostComments[]
+}
+
+model PostPhotos {
+  id     String @id @default(uuid())
+  Post   Post   @relation(fields: [postId], references: [id])
+  postId String
+  photo  String
+}
+
+model PostVideos {
+  id     String @id @default(uuid())
+  Post   Post   @relation(fields: [postId], references: [id])
+  postId String
+  video  String
+}
+
+model PostComments {
+  id        String    @id @default(uuid())
+  body      String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime?
+  User      User      @relation(fields: [userId], references: [id])
+  userId    String
+  Post      Post      @relation(fields: [postId], references: [id])
+  postId    String
+}
+
+model Payment {
+  id          String        @id @default(uuid())
+  amount      Float
+  description String
+  status      PaymentStatus
+  createdAt   DateTime      @default(now())
+  payedAt     DateTime?
+
+  paymentMethod PaymentMethod
+  paymentType   PaymentType
+
+  Ticket   Ticket? @relation(fields: [ticketId], references: [id])
+  ticketId String?
+}
+
+enum PaymentStatus {
+  requires_payment_method
+  requires_confirmation
+  requires_action
+  processing
+  requires_capture
+  canceled
+  succeeded
+}
+
+enum PaymentType {
+  CREDIT_CARD
+  PAYPAL
+  BANK_TRANSFER
+}
+
+enum PaymentMethod {
+  STRIPE
+}
+
+model Address {
+  id           String         @id @default(uuid())
+  street       String
+  number       String
+  neighborhood String
+  city         String
+  state        String
+  country      String
+  zipCode      String
+  complement   String
+  latitude     Float
+  longitude    Float
+  Organization Organization[]
+  User         User[]
+}
