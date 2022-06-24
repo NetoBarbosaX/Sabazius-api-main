@@ -16,7 +16,6 @@ app.use(cors());
 const fileUpload = require("express-fileupload");
 app.use(fileUpload());
 
-
 // Fire base
 const admin = require("firebase-admin");
 var serviceAccount = require("./config/firebase.json");
@@ -30,12 +29,7 @@ const port = process.env.PORT || 3000;
 app.use(express.json());
 
 // Routes
-
-app.use("/auth", require("./routes/auth/index.js"));
-app.use("/upload", require("./routes/upload/index.js"));
-app.use("/user", require("./routes/user/index.js"));
-app.use("/organization", require("./routes/organization/index.js"));
-app.use("/university", require("./routes/university/index.js"));
+app.use("/land", require("./routes/land/index.js"));
 
 //404 error handler
 app.use(function (req, res, next) {
