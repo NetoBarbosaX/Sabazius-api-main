@@ -1,15 +1,15 @@
-var express = require("express");
-var router = express.Router();
-const UPLOAD = require("@src/middlewares/upload-firebase");
+async function main() {
+  const MyNFT = await ethers.getContractFactory("MyNFT")
 
-router.post("/", UPLOAD(), async (req, res) => {
-  console.log(req.files);
-  let file = req.files.file;
-  let url = await file.firebase.getSignedUrl({
-    action: "read",
-    expires: "03-09-2491",
-  });
-  res.json({url});
-});
+  // Start deployment, returning a promise that resolves to a contract object
+  const myNFT = await MyNFT.deploy()
+  await myNFT.deployed()
+  console.log("Contract deployed to address:", myNFT.address)
+}
 
-module.exports = router;
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })
